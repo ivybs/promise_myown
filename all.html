@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./promise.js"></script>
+    
+</head>
+<body>
+    <script>
+   
+   /**
+    * Promise.all([p1,p2,p3])
+    * 只有p1,p2,p3三个promise对象的状态都是fullfill的时候all返回的promise的状态才是fullfill
+    * 成果的结果是由p1,p2,p3成果的结果组成的一个数组
+    * 但凡有一个promise对象状态不是fullfill,all返回的promise对象的状态就是reject
+    * 且失败的那一个对象中的结果就是返回的Promise对象中的结果
+    */
+   const p1 = new Promise((resolve,reject) => {
+       setTimeout(() =>{resolve('ok')},1000)
+    
+   })
+   const p2 = Promise.resolve('success')
+   const p3 = Promise.reject('oh yeah')
+   const res = Promise.all([p1,p2,p3])
+   console.log(res)
+        
+    </script>
+    
+</body>
+</html>

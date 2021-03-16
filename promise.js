@@ -29,7 +29,6 @@ function Promise(executor){
         // if(self.callback.onResolved){
         //     self.callback.onResolved(data)
         // }
-        console.log(self.PromiseState,self.PromiseResult)
         self.callbacks.forEach(item => {
             if(item.onResolved){
                 item .onResolved(data)
@@ -71,29 +70,22 @@ function Promise(executor){
 
 Promise.prototype.then = function(onResolved,onRejected){
     const self = this;
-    // 封装函数
-    function callback (type){
-        try {
-            let result = type(self.PromiseResult);
-            console.log("res",result)
-            if(result instanceof Promise){
-                //如果返回的对象本来就是一个Promise对象
-                // 那就直接返回这个Promise对象
-                result.then(value => {
-                    resolve(value)
-                },err =>{
-                    reject(err)
-                })
-            }else{
-                //结果的对象状态为成功，数据为result
-                resolve(result)
-            }
-        }catch (error) {
-            reject(error)
-        } 
-    }
     // 为了实现异常穿刺，当得到的返回值不是一个函数，创建一个默认值
-    if(typeof onRejected !== 'function')
+    
+    if(typeof onRejected !== 'function'){
+        // 相当于 如果你没有传onRejected回调函数的时候
+        // 就会默认给你返回下面这样的一个函数
+        onRejected = reason => {
+            throw reason
+        }
+    }
+
+    // 为了实现即使.then里面两个回调函数都为空也可以继续使用下面的调用链
+    // 为onResolved函数设置默认的函数
+    if(typeof onResolved !== 'function'){
+        onResolved = value => value
+        // onResolved = value => {return value;}
+    }
     // .then函数返回的也是一个promise对象
     return new Promise((resolve,reject) => {
          // 在修改状态是同步的前提下，应该在状态修改后调用回调函数
@@ -103,7 +95,6 @@ Promise.prototype.then = function(onResolved,onRejected){
         if(this.PromiseState === "fullfilled"){
             try {
                 let result = onResolved(self.PromiseResult);
-                console.log("res",result)
                 if(result instanceof Promise){
                     //如果返回的对象本来就是一个Promise对象
                     // 那就直接返回这个Promise对象
@@ -201,6 +192,80 @@ Promise.prototype.catch = function(onRejected){
     return this.then(undefined,onRejected)
 }
 
-Promise.prototype.race = function(){}
+// Promise.prototype.then
+// 后面的函数是属于Promise函数的实例对象的
+// Promise.then
+// 后面的函数是属于Promise函数对象的
+Promise.resolve = function(value){
+    return new Promise((resolve,reject) => {
+        if(value instanceof Promise){
+            value.then(v => {
+                resolve(v)
+            },e => {
+                reject(e)
+            })
+        }else{
+            resolve(value)
+        }
+    })
+}
 
-Promise.prototype.all = function(){}
+Promise.reject = function(value){
+    return new Promise((resolve,reject) => {
+        reject(value)
+    })
+}
+
+// all方法标志数组中的所有Promise状态都是fullfill的时候,
+// all返回的promise对象的状态才是fullfill,且返回的数据是所有对象的数据的集合
+// 在所有的Promise对象中只要有一个promise对象返回的是reject,那么all返回的就是reject
+// 并且all返回的promise对象的数据是reject的这个对象的数据
+Promise.all = function(promises){
+    return new Promise((resolve,reject)=>{
+        let count = 0;
+        let arr = [];
+        promises.forEach((item,i) => {
+            item.then(v => {
+                // 计数
+                count ++
+                // 将当前promise对象成功的结果 存入到数组中
+                // 用push存在一个小瑕疵,因为可能存在p3比p1先执行.push这个函数
+                // arr.push(v)
+                arr[i] = v      
+                // 只有当所有的Promise对象都成功了
+                if(count === promises.length){
+                    resolve(arr)
+                }
+            }, err => {
+                reject(err)
+            })
+           
+       })
+    })
+
+
+}
+
+
+
+
+
+
+Promise.race = function(promises){
+    return new Promise((resolve,reject) => {
+        for(let i =0; i< promises.length;i++){
+            promises[i].then(v => {
+                // 修改状态为fullfill
+                resolve(v)
+            }, e => {
+                // 修改状态为reject
+                // 注意一个问题就是,状态修改过一次后不能再修改
+                // 所以代码不需要再做过多的处理了
+                reject(e)
+            })
+        }
+    })
+
+
+}
+

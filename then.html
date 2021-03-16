@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./promise.js"></script>
+    
+</head>
+<body>
+    <script>
+        /**
+         * 实现Promise的时候需要注意的几个规则：
+         * 1.promise对象的执行器中的代码是同步的时候
+         *    先修改状态再去执行then里面和修改后状态对应的方法
+         * 
+         * 2.promise对象的执行器中的代码是异步的时候
+         *      需要等到异步操作完成，修改好promise对象的状态之后
+         *      才会去执行then里面和修改后状态对应的方法
+         * 
+         * 3..then()函数返回的是一个promise对象
+         *      .then(onResolved,onRejected)中有两个回调函数onResolved，onRejected
+         *      需要注意的是：当回调函数返回的是非Promise对象的时候，
+         *      最后需要得到一个状态为fullfill，数据为这个非promise对象
+         *      的这样一个最后封装好的promise对象
+         * 
+         *      当回调函数返回的是promise对象的时候，
+         *      就需要执行这个promise对象，并且根据回调函数的执行来修改promise对象的状态
+        */
+
+        let p = new Promise((resolve,reject) => {
+            // 改变状态的三种方式：resolve\reject\抛出异常
+            // resolve("ok")
+            // reject("err")
+            // 抛出异常
+            // throw "error"
+            // 异步操作 
+            //当存在异步操作的时候，
+            //会等到异步的操作完成并修改了Promise状态之后才会执行then中的回调函数
+            // 所以对于then函数的调用应该写在resolve方法中
+            setTimeout(() => {
+                resolve("ok")
+                // reject("err")
+            },1000)
+
+        })
+
+
+
+
+        const res =  p.then(value =>{
+            // return new Promise((resolve,reject) => {
+            //     // resolve("success")
+
+            //     // reject("oh no")
+            //     // throw 'fail'
+            //     // return "hello"
+            // })
+            // return "hello"
+            console.log("hello")
+        },err => {
+            // console.warn(err)
+            // return "test"
+            throw "err"
+        })
+        p.then(value =>{
+            alert(value)
+        },err => {
+            alert(err)
+        })
+        console.log(res)
+        console.log(res)
+        console.log(p)
+    </script>
+    
+</body>
+</html>

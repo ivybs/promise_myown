@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./promise.js"></script>
+    
+</head>
+<body>
+    <script>
+   /**
+    * race方法返回的是多个promise中第一个执行完成的promise对象
+    * 所谓第一个执行完成也即第一个改变Promise对象状态
+   */
+   const p1 = new Promise((resolve,reject) => {
+       setTimeout(() =>{resolve('ok')},1000)
+    
+   })
+   const p2 = Promise.reject('success')
+   const p3 = Promise.reject('oh yeah')
+   const res = Promise.race([p1,p2,p3])
+   console.log(res)
+        
+    </script>
+    
+</body>
+</html>
